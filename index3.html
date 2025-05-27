@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Форма обратной связи</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-4Q6Gf2aSP4eDXB8Miphtr37CMZZQ5oXLH2yaXMJ2w8e2ZtHTl7GptT4jmndRuHDT" crossorigin="anonymous" />
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            background: linear-gradient(to right, white, grey);
+        }
+        form { display: grid; gap: 15px; }
+        label { display: block; margin-bottom: 5px; }
+        input, textarea { width: 100%; padding: 8px; box-sizing: border-box; }
+        .error { color: red; font-size: 0.8em; height: 1em; }
+        .success { color: green; margin-top: 15px; }
+    </style>
+</head>
+<body>
+
+<header>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <a class="navbar-brand"><b>Мой сайт</b></a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <section class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav mx-auto">
+                <li class="nav-item">
+                    <a class="nav-link active" href="index.html"><b>Главная</b></a>
+                </li>
+            </ul>
+        </section>
+    </nav>
+</header>
+
+<h2 class="text-center mt-4">Форма обратной связи</h2>
+<div class="container mt-4 d-flex justify-content-center">
+    <div class="w-100" style="max-width: 500px;">
+        <form id="feedbackForm">
+            <label for="name">Имя</label>
+            <input type="text" id="name" required />
+            <span id="nameError" class="error"></span>
+
+            <label for="email">Email</label>
+            <input type="email" id="email" required />
+            <span id="emailError" class="error"></span>
+
+            <label for="comment">Комментарий</label>
+            <textarea id="comment" rows="3" required></textarea>
+            <span id="commentError" class="error"></span>
+
+            <button type="submit" class="btn btn-primary mt-2">Отправить</button>
+        </form>
+        <p id="successMessage" class="success text-center"></p>
+    </div>
+</div>
+
+<script>
+    document.getElementById('feedbackForm').addEventListener('submit', async function (e) {
+        e.preventDefault();
+
+        document.querySelectorAll('.error').forEach(el => el.textContent = '');
+        document.getElementById('successMessage').textContent = '';
+
+        const name = document.getElementById('name').value.trim();
+        const email = document.getElementById('email').value.trim();
+        const comment = document.getElementById('comment').value.trim();
+
+        let isValid = true;
+
+        if (!name) {
+            document.getElementById('nameError').textContent = 'Введите имя';
+            isValid = false;
+        }
+
+        if (!email) {
+            document.getElementById('emailError').textContent = 'Введите email';
+            isValid = false;
+        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+            document.getElementById('emailError').textContent = 'Некорректный email';
+            isValid = false;
+        }
+
+        if (!comment) {
+            document.getElementById('commentError').textContent = 'Введите комментарий';
+            isValid = false;
+        }
+
+        if (!isValid) return;
+
+        const formData = {
+            name: name,
+            email: email,
+            comment: comment
+        };
+
+        try {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 2000);
+
+            const response = await fetch('http://localhost:8080/api/feedback', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData),
+                signal: controller.signal
+            });
+
+            clearTimeout(timeoutId);
+
+            if (!response.ok) {
+                console.warn('Бэкенд вернул ошибку:', response.status);
+            } else {
+                console.log('Успешно отправлено на сервер');
+            }
+        } catch (err) {
+            console.warn('Не удалось отправить на сервер:', err.message);
+        }
+
+        document.getElementById('successMessage').textContent = 'Спасибо за обратную связь!';
+        document.getElementById('feedbackForm').reset();
+    });
+</script>
+
+</body>
+</html>
