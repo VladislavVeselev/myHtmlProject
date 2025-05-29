@@ -121,7 +121,7 @@
             console.warn('Не удалось отправить на сервер:', err.message);
         }
 
-        document.getElementById('successMessage').textContent = 'Спасибо за обратную связь!';
+        document.getElementById('successMessage').textContent = 'Спасибо, ' + name + ', за обратную связь!';
         document.getElementById('feedbackForm').reset();
     });
 </script>
