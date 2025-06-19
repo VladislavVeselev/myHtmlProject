@@ -93,17 +93,13 @@
 
         if (!isValid) return;
 
-        const formData = {
-            name: name,
-            email: email,
-            comment: comment
-        };
+        const formData = { name, email, message: comment };
 
         try {
             const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 2000);
+            const timeoutId = setTimeout(() => controller.abort(), 3000);
 
-            const response = await fetch('http://localhost:8080/api/feedback', {
+            const response = await fetch('http://158.160.145.245:8013/api/feedback', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(formData),
@@ -113,16 +109,17 @@
             clearTimeout(timeoutId);
 
             if (!response.ok) {
-                console.warn('Бэкенд вернул ошибку:', response.status);
-            } else {
-                console.log('Успешно отправлено на сервер');
+                document.getElementById('successMessage').textContent = 'Произошла ошибка при отправке данных';
+                return;
             }
-        } catch (err) {
-            console.warn('Не удалось отправить на сервер:', err.message);
-        }
 
-        document.getElementById('successMessage').textContent = 'Спасибо, ' + name + ', за обратную связь!';
-        document.getElementById('feedbackForm').reset();
+            const message = await response.text();
+            document.getElementById('successMessage').textContent = message;
+            document.getElementById('feedbackForm').reset();
+        } catch (err) {
+            document.getElementById('successMessage').textContent = 'Не удалось связаться с сервером';
+            console.warn('Ошибка запроса:', err.message);
+        }
     });
 </script>
 
